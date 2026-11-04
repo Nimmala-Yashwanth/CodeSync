@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: codesync
+      POSTGRES_PASSWORD: codesync_dev_only
+      POSTGRES_DB: codesync
+    ports:
+      - "5432:5432"
+    volumes:
+      - codesync_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U codesync"]
+      interval: 5s
+      retries: 10
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      PORT: 4000
+      AUTH_SECRET: ${AUTH_SECRET:?Set AUTH_SECRET in .env}
+      DATABASE_URL: postgres://codesync:codesync_dev_only@db:5432/codesync
+      CORS_ORIGIN: http://localhost:5173
+    ports:
+      - "4000:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    environment:
+      VITE_API_URL: http://localhost:4000
+      VITE_WS_URL: ws://localhost:4000/collab
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+volumes:
+  codesync_db:

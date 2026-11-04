@@ -1,0 +1,17 @@
+{
+  "name": "codesync",
+  "private": true,
+  "version": "2.0.0",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k \"npm run dev -w @codesync/api\" \"npm run dev -w @codesync/web\"",
+    "build": "npm run build -w @codesync/web",
+    "test": "npm run test -w @codesync/api",
+    "start": "npm run start -w @codesync/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
